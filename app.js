@@ -13,9 +13,7 @@ if (process.argv[2]) {
 }
 
 // console.log(outport);
-
-
-
+/*
 var sendHeartbeat = function() {
 	var buf = osc.toBuffer({
 		address: '/hearbeat',
@@ -34,3 +32,15 @@ var sendHeartbeat = function() {
 };
 
 setInterval(sendHeartbeat, 2000);
+*/
+
+// Myo stuff
+
+var Myo = require('myo');
+
+Myo.connect('com.stolksdorf.app');
+
+Myo.on('fist', function() {
+	console.log('Hello Myo!');
+	this.vibrate();
+})
