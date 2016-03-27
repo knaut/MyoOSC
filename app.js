@@ -150,6 +150,17 @@ Myo.on('fingers_spread_off', function() {
 // Double Tap
 // not for now
 
+// Gyroscope
+Myo.on('gyroscope', function() {
+	var g = this.lastIMU.gyroscope;
+
+	if (g.x > 200 || g.y > 200 || g.z > 200) {
+		sendOsc(this.connectIndex, 'hit', 1);
+	} else {
+		sendOsc(this.connectIndex, 'hit', 0);
+	}
+});
+
 // useful statuses
 Myo.on('battery_level', function(data) {
 	sendOsc(this.connectIndex, 'battery_level', data);
