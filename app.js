@@ -83,6 +83,28 @@ Myo.on('orientation', function(data) {
 
 	sendOsc(this.connectIndex, 'roll', roll);
 	sendOsc(this.connectIndex, 'pitch', pitch);
+
+	// atForward
+	if (pitch < 0.4 && pitch > -0.6) {
+		sendOsc(this.connectIndex, 'atForward', 1);
+	} else {
+		sendOsc(this.connectIndex, 'atForward', 0);
+	}
+
+	// atGround
+	if (pitch > -0.6) {
+		sendOsc(this.connectIndex, 'atGround', 1);
+	} else {
+		sendOsc(this.connectIndex, 'atGround', 0);
+	}
+
+	// atSky
+	if (pitch < 0.4) {
+		sendOsc(this.connectIndex, 'atSky', 1);
+	} else {
+		sendOsc(this.connectIndex, 'atSky', 0);
+	}
+
 });
 
 
