@@ -3,8 +3,6 @@ var dgram = require('dgram');
 
 var udp = dgram.createSocket('udp4');
 
-// console.log(udp);
-
 var outport;
 if (process.argv[2]) {
 	outport = parseInt(process.argv[2]);
@@ -12,7 +10,7 @@ if (process.argv[2]) {
 	outport = 41234;
 }
 
-// console.log(outport);
+// example OSC message
 /*
 var sendHeartbeat = function() {
 	var buf = osc.toBuffer({
@@ -34,13 +32,34 @@ var sendHeartbeat = function() {
 setInterval(sendHeartbeat, 2000);
 */
 
+var sendOsc = function( myoId, msg, args ) {
+	var buf = osc.toBuffer({
+		address: '/myo/' + myo + '/' + msg,
+		args: args
+	});
+}
+
 // Myo stuff
 
 var Myo = require('myo');
-
 Myo.connect('com.stolksdorf.app');
 
-Myo.on('fist', function() {
-	console.log('Hello Myo!');
-	this.vibrate();
+
+Myo.on('connected', function() {
+	console.log('unlock', this);
+	Myo.setLockingPolicy('none');
+	this.unlock('hold');
+
+});
+
+Myo.on('arm_sync', function() {
+	console.log('sync');
+	this.locked = false;
 })
+
+// Myo.on('fist', function() {
+// 	console.log('Hello Myo!');
+// 	this.vibrate();
+// 	console.log(this);
+// });
+
