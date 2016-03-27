@@ -32,34 +32,60 @@ var sendHeartbeat = function() {
 setInterval(sendHeartbeat, 2000);
 */
 
+console.log('OSC Port:', outport);
+
 var sendOsc = function( myoId, msg, args ) {
 	var buf = osc.toBuffer({
-		address: '/myo/' + myo + '/' + msg,
+		address: '/myo/' + myoId + '/' + msg,
 		args: args
 	});
-}
+
+	udp.send(buf, 0, buf.length, outport, 'localhost');
+};
 
 // Myo stuff
-
 var Myo = require('myo');
 Myo.connect('com.stolksdorf.app');
 
-
 Myo.on('connected', function() {
-	console.log('unlock', this);
+	// console.log(this);
+
+	// set the locking policy
 	Myo.setLockingPolicy('none');
+	
+	// tell the connected myos to hold at unlocked
 	this.unlock('hold');
+
+	// streaming EMG
+	this.streamEMG(true);
+
 
 });
 
-Myo.on('arm_sync', function() {
-	console.log('sync');
-	this.locked = false;
-})
+// EMG
+Myo.on('emg', function(data) {
+	// console.log(data);
+	sendOsc(this.connectIndex, 'emg', data);
+});
 
-// Myo.on('fist', function() {
-// 	console.log('Hello Myo!');
-// 	this.vibrate();
-// 	console.log(this);
-// });
+Myo.on('fist', function(data) {
+	console.log(this)
+});
+
+// Orientation
+Myo.on('orientation', function(data) {
+	var quat = this.lastQuant;
+
+	var roll = Math.atan2(2 * (quat.w * quat.x + quat.y * quat.z), 1 - 2 * (quat.x * quat.x + quat.y * quat.y) );
+	var pitch = Math.asin(2 * (quat.w * quat.y - quat.z * quat.x ) );
+	// we don't actually use yaw
+	// var yaw;
+
+	sendOsc(this.connectIndex, 'roll', roll);
+	sendOsc(this.connectIndex, 'pitch', pitch);
+});
+
+
+
+
 
