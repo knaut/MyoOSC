@@ -64,12 +64,7 @@ Myo.on('connected', function() {
 
 // EMG
 Myo.on('emg', function(data) {
-	// console.log(data);
 	sendOsc(this.connectIndex, 'emg', data);
-});
-
-Myo.on('fist', function(data) {
-	console.log(this)
 });
 
 // Orientation
@@ -92,20 +87,92 @@ Myo.on('orientation', function(data) {
 	}
 
 	// atGround
-	if (pitch > -0.6) {
+	if (pitch < -0.6) {
 		sendOsc(this.connectIndex, 'atGround', 1);
 	} else {
 		sendOsc(this.connectIndex, 'atGround', 0);
 	}
 
 	// atSky
-	if (pitch < 0.4) {
+	if (pitch > 0.4) {
 		sendOsc(this.connectIndex, 'atSky', 1);
 	} else {
 		sendOsc(this.connectIndex, 'atSky', 0);
 	}
-
 });
+
+// Poses
+// Fist
+Myo.on('fist', function() {
+	this.vibrate('short');
+	sendOsc(this.connectIndex, 'fist', 1);
+});
+
+Myo.on('fist_off', function() {
+	this.vibrate('short');
+	sendOsc(this.connectIndex, 'fist', 0);
+});
+
+// Wave In
+Myo.on('wave_in', function() {
+	this.vibrate('short');
+	sendOsc(this.connectIndex, 'wave_in', 1);
+});
+
+Myo.on('wave_in_off', function() {
+	this.vibrate('short');
+	sendOsc(this.connectIndex, 'wave_in', 0);
+});
+
+// Wave Out
+Myo.on('wave_out', function() {
+	this.vibrate('short');
+	sendOsc(this.connectIndex, 'wave_out', 1);
+});
+
+Myo.on('wave_out_off', function() {
+	this.vibrate('short');
+	sendOsc(this.connectIndex, 'wave_out', 0);
+});
+
+// Fingers Spread
+Myo.on('fingers_spread', function() {
+	this.vibrate('short');
+	sendOsc(this.connectIndex, 'fingers_spread', 1);
+});
+
+Myo.on('fingers_spread_off', function() {
+	this.vibrate('short');
+	sendOsc(this.connectIndex, 'fingers_spread', 0);
+});
+
+// Double Tap
+// not for now
+
+// useful statuses
+Myo.on('battery_level', function(data) {
+	sendOsc(this.connectIndex, 'battery_level', data);
+});
+Myo.requestBatteryLevel();
+
+Myo.on('bluetooth_strength', function(data) {
+	sendOsc(this.connectIndex, 'bluetooth_strength', data);
+});
+Myo.requestBluetoothStrength();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
