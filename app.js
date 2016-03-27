@@ -59,7 +59,8 @@ Myo.on('connected', function() {
 	// streaming EMG
 	this.streamEMG(true);
 
-
+	this.requestBatteryLevel();
+	this.requestBluetoothStrength();
 });
 
 // EMG
@@ -153,12 +154,10 @@ Myo.on('fingers_spread_off', function() {
 Myo.on('battery_level', function(data) {
 	sendOsc(this.connectIndex, 'battery_level', data);
 });
-Myo.requestBatteryLevel();
 
 Myo.on('bluetooth_strength', function(data) {
 	sendOsc(this.connectIndex, 'bluetooth_strength', data);
 });
-Myo.requestBluetoothStrength();
 
 
 
