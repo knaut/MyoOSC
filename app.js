@@ -48,8 +48,6 @@ var Myo = require('myo');
 Myo.connect('com.stolksdorf.app');
 
 Myo.on('connected', function() {
-	// console.log(this);
-
 	// set the locking policy
 	Myo.setLockingPolicy('none');
 	

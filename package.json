@@ -1,13 +1,13 @@
 {
-  "name": "osc-test",
+  "name": "MyoOSC",
   "version": "0.0.1",
-  "description": "osc testing",
+  "description": "A simple command-line app for sending OSC messages from the Myo Armband.",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "myo": "^2.1.1",
     "osc-min": "^1.1.1"
