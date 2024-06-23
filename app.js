@@ -10,29 +10,7 @@ if (process.argv[2]) {
 	outport = 41234;
 }
 
-// example OSC message
-/*
-var sendHeartbeat = function() {
-	var buf = osc.toBuffer({
-		address: '/hearbeat',
-		args: [
-			12,
-			'stringingnging',
-			new Buffer('beat', {
-				type: 'integer',
-				value: 7
-			})
-		]
-	})
-
-	udp.send(buf, 0, buf.length, outport, 'localhost');
-	console.log(buf)
-};
-
-setInterval(sendHeartbeat, 2000);
-*/
-
-console.log('OSC Port:', outport, 'hello test');
+console.log('OSC Port:', outport);
 
 function throttle (callback, limit) {
     var waiting = false;                      // Initially, we're not waiting
@@ -48,8 +26,6 @@ function throttle (callback, limit) {
 }
 
 var sendOsc = function( myoId, msg, args ) {
-	
-
 	var buf = osc.toBuffer({
 		address: '/myo/' + myoId + '/' + msg,
 		args: args
@@ -59,103 +35,23 @@ var sendOsc = function( myoId, msg, args ) {
 	udp.send(buf, 0, buf.length, outport, '192.168.0.30');
 };
 
-function finiteDifferenceMethod(alpha, L, T, nx, nt) {
-    // Parameters
-    let dx = L / (nx - 1);  // Spatial step
-    let dt = T / nt;        // Temporal step
-    let r = alpha * dt / (dx * dx);  // Stability criterion
-    
-    // Initial conditions
-    let u = [];  // Temperature distribution array
-    for (let i = 0; i < nx; i++) {
-        u[i] = Math.sin(Math.PI * i * dx / L);  // Initial temperature profile (sinusoidal)
-    }
-    
-    // Time stepping loop
-    for (let k = 0; k < nt; k++) {
-        let u_new = [];
-        
-        // Boundary conditions (fixed at ends)
-        u_new[0] = 0;     // u(0, t) = 0
-        u_new[nx - 1] = 0;  // u(L, t) = 0
-        
-        // Interior points
-        for (let i = 1; i < nx - 1; i++) {
-            u_new[i] = u[i] + r * (u[i + 1] - 2 * u[i] + u[i - 1]);
-        }
-        
-        // Update u for the next time step
-        u = u_new.slice();
-    }
-    
-    return u;
-}
-
-// Example usage:
-let alpha = 0.1;  // Thermal diffusivity
-let L = 1.0;      // Length of the rod
-let T = 1.0;      // Total time
-let nx = 5;      // Number of spatial grid points
-let nt = 1000;    // Number of time steps
-
-// Myo stuff
+// Myo setup
 var Myo = require('myo');
 Myo.connect('com.stolksdorf.app');
 
 Myo.on('connected', function() {
 	// set the locking policy
 	Myo.setLockingPolicy('none');
-	
 	// tell the connected myos to hold at unlocked
 	this.unlock('hold');
-
 	// streaming EMG
 	this.streamEMG(true);
-
 	this.requestBatteryLevel();
 	this.requestBluetoothStrength();
 });
 
-function throttle (callback, limit) {
-    var waiting = false;                      
-    return function () {                      
-        if (!waiting) {                       
-            callback.apply(this, arguments);  
-            waiting = true;                   
-            setTimeout(function () {          
-                waiting = false;              
-            }, limit);
-        }
-    }
-}
 
 var throttleLog = throttle(console.log, 200)
-
-// EMG
-Myo.on('emg', function(data) {
-	sendOsc(this.connectIndex, 'emg', data);
-
-	/*
-	if(this.connectIndex === 1) {
-		let result = finiteDifferenceMethod( data[0] , L, T, nx, nt);
-
-		// var sum = result.reduce(function(acc, curr) {
-		// 	return acc + curr
-		// }, result[0] )
-
-		var mySum = 0;
-		for (let i = 0; result.length > i; ++i) {
-			mySum = mySum + result[i]
-		}
-
-		// mySum = mySum/result.length
-
-		throttleLog(data[0], mySum)
-	}
-	*/
-
-	
-});
 
 var orientationVals = [
 	{
@@ -177,6 +73,53 @@ var orientationVals = [
 		waveIn: 0
 	},
 ]
+
+function sendDualGesture(leftGesture, rightGesture, orientation, value) {
+
+	if (orientationVals[0][orientation] && orientationVals[1][orientation]) {
+		
+		if (orientationVals[0][leftGesture] && orientationVals[1][rightGesture]) {
+
+			sendOsc(3, `0_${leftGesture}_1_${rightGesture}_${orientation}`, value)
+		} else {
+
+			sendOsc(3, `0_${leftGesture}_1_${rightGesture}_${orientation}`, 0)
+		}
+
+	} else {
+		sendOsc(3, `0_${leftGesture}_1_${rightGesture}_${orientation}`, 0)
+	}
+}
+
+/*
+function sendDualGesture(leftGesture, rightGesture, value) {
+	if (orientationVals[0].atSky && orientationVals[1].atSky) {
+		// console.log(orientationVals, leftGesture, rightGesture, value)
+		if (orientationVals[0][leftGesture] && orientationVals[1][rightGesture]) {
+
+			sendOsc(3, `0_${leftGesture}_1_${rightGesture}_atSky`, value)	
+		}
+	}
+
+	if (orientationVals[0].atForward && orientationVals[1].atForward) {
+		if (orientationVals[0][leftGesture] && orientationVals[1][rightGesture]) {
+			sendOsc(3, `0_${leftGesture}_1_${rightGesture}_atForward`, value)	
+		}
+	}
+
+	if (orientationVals[0].atGround && orientationVals[1].atGround) {
+		if (orientationVals[0][leftGesture] && orientationVals[1][rightGesture]) {
+			sendOsc(3, `0_${leftGesture}_1_${rightGesture}_atGround`, value)	
+		}
+	}
+}
+*/
+
+
+// EMG
+Myo.on('emg', function(data) {
+	sendOsc(this.connectIndex, 'emg', data);
+});
 
 // Orientation
 Myo.on('orientation', function(data) {
@@ -238,6 +181,7 @@ Myo.on('orientation', function(data) {
 		orientationVals[this.connectIndex].atSky = 0
 		
 	}
+
 });
 
 // Poses
@@ -245,7 +189,9 @@ Myo.on('orientation', function(data) {
 Myo.on('fist', function() {
 	this.vibrate('short');
 	sendOsc(this.connectIndex, 'fist', 1);
+	orientationVals[this.connectIndex].fist = 1;
 
+	// single gestures
 	if (orientationVals[this.connectIndex].atSky) {
 		sendOsc(this.connectIndex, 'fist_atSky', 1)
 	}
@@ -258,11 +204,43 @@ Myo.on('fist', function() {
 		sendOsc(this.connectIndex, 'fist_atGround', 1)
 	}
 
+	// dual gestures (fist)
+	// sendDualGesture('fist', 'fist', 1)
+
+	sendDualGesture('fist', 'fist', 'atSky', 1)
+	sendDualGesture('fist', 'fist', 'atForward', 1)
+	sendDualGesture('fist', 'fist', 'atGround', 1)
+
+	sendDualGesture('fist', 'waveOut', 'atSky', 1)
+	sendDualGesture('fist', 'waveOut', 'atForward', 1)
+	sendDualGesture('fist', 'waveOut', 'atGround', 1)
+
+	sendDualGesture('fist', 'waveIn', 'atSky', 1)
+	sendDualGesture('fist', 'waveIn', 'atForward', 1)
+	sendDualGesture('fist', 'waveIn', 'atGround', 1)
+
+	sendDualGesture('fist', 'fingersSpread', 'atSky', 1)
+	sendDualGesture('fist', 'fingersSpread', 'atForward', 1)
+	sendDualGesture('fist', 'fingersSpread', 'atGround', 1)
+
+	// sendDualGesture('fist', 'waveIn', 'atForward', 1)
+	// sendDualGesture('fist', 'fingersSpread', 'atGround', 1)
+
+/*
+	sendDualGesture('fist', 'waveOut', 1)
+	sendDualGesture('fist', 'waveIn', 1)
+	sendDualGesture('fist', 'fingersSpread', 1)
+
+	sendDualGesture('waveOut', 'fist', 1)
+	sendDualGesture('waveIn', 'fist', 1)
+	sendDualGesture('fingersSpread', 'fist', 1)
+*/
+
+
 });
 
 Myo.on('fist_off', function() {
 	this.vibrate('short');
-
 	orientationVals[this.connectIndex].fist = 0
 
 	sendOsc(this.connectIndex, 'fist', 0);
@@ -270,11 +248,60 @@ Myo.on('fist_off', function() {
 	sendOsc(this.connectIndex, 'fist_atForward', 0)
 	sendOsc(this.connectIndex, 'fist_atGround', 0)
 	
+
+	// if (orientationVals[0].atSky && orientationVals[1].atSky) {
+		// sendOsc(3, '0_fist_1_fist_atSky', 0)
+		
+	// }
+
+	sendDualGesture('fist', 'fist', 'atSky', 0)
+	sendDualGesture('fist', 'fist', 'atForward', 0)
+	sendDualGesture('fist', 'fist', 'atGround', 0)
+
+	sendDualGesture('fist', 'waveOut', 'atSky', 0)
+	sendDualGesture('fist', 'waveOut', 'atForward', 0)
+	sendDualGesture('fist', 'waveOut', 'atGround', 0)
+
+	sendDualGesture('fist', 'waveIn', 'atSky', 0)
+	sendDualGesture('fist', 'waveIn', 'atForward', 0)
+	sendDualGesture('fist', 'waveIn', 'atGround', 0)
+
+	sendDualGesture('fist', 'fingersSpread', 'atSky', 0)
+	sendDualGesture('fist', 'fingersSpread', 'atForward', 0)
+	sendDualGesture('fist', 'fingersSpread', 'atGround', 0)
+
+
+	// sendDualGesture('fist', 'waveIn', 'atForward', 0)
+	// sendDualGesture('fist', 'fingersSpread', 'atGround', 0)
+	
+
+	// dual gesture off signals
+
+	// console.log(orientationVals)
+
+	// sendDualGesture('fist', 'fist', 0)
+
+	/*
+	if (this.connectIndex === 0) {
+		sendDualGesture('fist', 'waveOut', 0)
+		sendDualGesture('fist', 'waveIn', 0)
+		sendDualGesture('fist', 'fingersSpread', 0)
+	}
+
+	if (this.connectIndex === 1) {
+		sendDualGesture('waveOut', 'fist', 0)
+		sendDualGesture('waveIn', 'fist', 0)
+		sendDualGesture('fingersSpread', 'fist', 0)
+	}
+	*/
+	
 });
 
 // Wave In
 Myo.on('wave_in', function() {
 	this.vibrate('short');
+	orientationVals[this.connectIndex].waveIn = 1;
+	
 	sendOsc(this.connectIndex, 'wave_in', 1);
 
 	if (orientationVals[this.connectIndex].atSky) {
@@ -288,19 +315,52 @@ Myo.on('wave_in', function() {
 	if (orientationVals[this.connectIndex].atGround) {
 		sendOsc(this.connectIndex, 'waveIn_atGround', 1)
 	}
+
+
+
+	// dual gestures (fist, waveIn)
+	/*
+	if (orientationVals[0].atSky && orientationVals[1].atSky) {
+		if (orientationVals[0].fist && orientationVals[1].waveIn) {
+			sendOsc(3, '0_fist_1_waveIn_atSky', 1)	
+		}
+	}
+
+	if (orientationVals[0].atForward && orientationVals[1].atForward) {
+		if (orientationVals[0].fist && orientationVals[1].waveIn) {
+			sendOsc(3, '0_fist_1_waveIn_atForward', 1)	
+		}
+	}
+
+	if (orientationVals[0].atGround && orientationVals[1].atGround) {
+		if (orientationVals[0].fist && orientationVals[1].waveIn) {
+			sendOsc(3, '0_fist_1_waveIn_atGround', 1)	
+		}
+	}
+	*/
+
+
 });
 
 Myo.on('wave_in_off', function() {
 	this.vibrate('short');
+	orientationVals[this.connectIndex].waveIn = 0;
+
 	sendOsc(this.connectIndex, 'wave_in', 0);
 	sendOsc(this.connectIndex, 'waveIn_atSky', 0)
 	sendOsc(this.connectIndex, 'waveIn_atForward', 0)
 	sendOsc(this.connectIndex, 'waveIn_atGround', 0)
+
+	sendDualGesture('fist', 'waveIn', 'atSky', 0)
+	sendDualGesture('fist', 'waveIn', 'atForward', 0)
+	sendDualGesture('fist', 'waveIn', 'atGround', 0)
 });
 
 // Wave Out
 Myo.on('wave_out', function() {
 	this.vibrate('short');
+	orientationVals[this.connectIndex].waveOut = 1;
+
 	sendOsc(this.connectIndex, 'wave_out', 1);
 
 	if (orientationVals[this.connectIndex].atSky) {
@@ -314,14 +374,41 @@ Myo.on('wave_out', function() {
 	if (orientationVals[this.connectIndex].atGround) {
 		sendOsc(this.connectIndex, 'waveOut_atGround', 1)
 	}
+
+	// dual gestures (fist, waveOut)
+	if (orientationVals[0].atSky && orientationVals[1].atSky) {
+		if (orientationVals[0].fist && orientationVals[1].waveOut) {
+			sendOsc(3, '0_fist_1_waveOut_atSky', 1)	
+		}
+	}
+
+	if (orientationVals[0].atForward && orientationVals[1].atForward) {
+		if (orientationVals[0].fist && orientationVals[1].waveOut) {
+			sendOsc(3, '0_fist_1_waveOut_atForward', 1)	
+		}
+	}
+
+	if (orientationVals[0].atGround && orientationVals[1].atGround) {
+		if (orientationVals[0].fist && orientationVals[1].waveOut) {
+			sendOsc(3, '0_fist_1_waveOut_atGround', 1)	
+		}
+	}
 });
 
 Myo.on('wave_out_off', function() {
 	this.vibrate('short');
+	orientationVals[this.connectIndex].waveOut = 0;
+
 	sendOsc(this.connectIndex, 'wave_out', 0);
 	sendOsc(this.connectIndex, 'waveOut_atSky', 0)
 	sendOsc(this.connectIndex, 'waveOut_atForward', 0)
 	sendOsc(this.connectIndex, 'waveOut_atGround', 0)
+
+	if (this.connectIndex === 1) {
+		sendOsc(3, '0_fist_1_waveOut_atSky', 0)
+		sendOsc(3, '0_fist_1_waveOut_atForward', 0)
+		sendOsc(3, '0_fist_1_waveOut_atGround', 0)
+	}
 });
 
 // Fingers Spread
