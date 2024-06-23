@@ -3,7 +3,7 @@ var buildStateString = require('./buildStateString')
 var gOrStateTest = [
 {
 	fist: {
-		atSky: 1,
+		atSky: 0,
 		atForward: 0,
 		atGround: 0
 	},
@@ -16,6 +16,11 @@ var gOrStateTest = [
 		atSky: 0,
 		atForward: 0,
 		atGround: 0
+	},
+	fingersSpread: {
+		atSky: 0,
+		atForward: 0,
+		atGround: 1
 	}
 },
 {
@@ -26,17 +31,22 @@ var gOrStateTest = [
 	},
 	waveOut: {
 		atSky: 0,
-		atForward: 1,
+		atForward: 0,
 		atGround: 0,
 	},
 	waveIn: {
 		atSky: 0,
 		atForward: 0,
 		atGround: 0
+	},
+	fingersSpread: {
+		atSky: 0,
+		atForward: 0,
+		atGround: 1
 	}
 }
 ]
 
-var result = buildStateString( gOrStateTest, true, true )
+var result = buildStateString( gOrStateTest, true )
 
 console.log(result)

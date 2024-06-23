@@ -19,14 +19,14 @@ var gestHasOrientation = function(gest) {
 	return false
 }
 
-var armHasGesture = function(arm) {
+var armHasGesture = function(arm, addOri) {
 	for (var gestKey in arm) {
 		var gest = arm[gestKey]
 
 		var gestOri = gestHasOrientation(gest)
 
 		if (gestOri) {
-			return gestKey + '_' + gestOri
+			return gestKey + (addOri ? '_' + gestOri : '')
 		}
 	}
 
@@ -35,11 +35,11 @@ var armHasGesture = function(arm) {
 
 
 
-var buildStateString = function( state ) {
+var buildStateString = function( state, addOri ) {
 	var str = ''
 
-	var leftGestString = armHasGesture( state[0] )
-	var rightGestString = armHasGesture( state[1] )
+	var leftGestString = armHasGesture( state[0], addOri )
+	var rightGestString = armHasGesture( state[1], addOri )
 
 	if (leftGestString) {
 		leftGestString = '0_' + leftGestString
