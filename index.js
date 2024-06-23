@@ -92,51 +92,6 @@ var gOrState = [
 }
 ]
 
-var buildStateString = function() {
-	var str = ''
-	var arr = ['', '']
-
-	for (var i = 0; gOrState.length > i; i++) {
-		var id = i;
-		var arm = gOrState[i];
-
-		for (var gest in arm) {
-			var gestOr = arm[gest]
-
-			// if (gestOr) {
-			// 	str =+ id + '_' + gest + '_' 
-			// }
-
-			console.log({gestOr})
-
-			var hasOri = false
-			for (var ori in gestOr) {
-
-				if ( gestOr[ori] ) {
-
-					hasOri = true
-					str = id + '_' + gest + '_' + ori
-
-				}
-
-			}
-
-			if (hasOri) {
-				arr[id] = str
-			} else {
-				arr[id] = ''
-			}
-		}
-	}
-
-	if (arr[0] && arr[1]) {
-		return arr[0] + '_' + arr[1]
-	}
-
-	if (arr[0]) return arr[0]
-
-	if (arr[1]) return arr[1]
-}
 
 var throttle = function(callback, limit) {
     var waiting = false;                      // Initially, we're not waiting
@@ -303,20 +258,11 @@ Myo.on('fist', function() {
 	this.vibrate('short');
 	var id = this.connectIndex;
 
-	/*
-	var string = buildStateString()
+	gOrState[id]['fist'].atSky = orientationState[id].atSky
+	gOrState[id]['fist'].atForward = orientationState[id].atForward
+	gOrState[id]['fist'].atGround = orientationState[id].atGround
 
-	gestureState[id].fist = 1
-
-	console.log(gestureState)
-
-	var updatedString = buildStateString()
-
-	var toggle = string === updatedString ? 0 : 1
-
-	console.log(updatedString)
-	*/
-	
+	console.log(gOrState, buildStateString())
 
 });
 
@@ -324,12 +270,11 @@ Myo.on('fist_off', function() {
 	this.vibrate('short');
 	var id = this.connectIndex;
 
-	gestureState[id].fist = 0
+	gOrState[id]['fist'].atSky = 0
+	gOrState[id]['fist'].atForward = 0
+	gOrState[id]['fist'].atGround = 0
 
-	var updatedString = buildStateString()
-
-	console.log(gestureState)
-	console.log(updatedString)
+	console.log(gOrState, buildStateString())
 
 });
 

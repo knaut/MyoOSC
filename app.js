@@ -316,7 +316,7 @@ Myo.on('wave_in', function() {
 		sendOsc(this.connectIndex, 'waveIn_atGround', 1)
 	}
 
-
+	
 
 	// dual gestures (fist, waveIn)
 	/*
@@ -350,10 +350,6 @@ Myo.on('wave_in_off', function() {
 	sendOsc(this.connectIndex, 'waveIn_atSky', 0)
 	sendOsc(this.connectIndex, 'waveIn_atForward', 0)
 	sendOsc(this.connectIndex, 'waveIn_atGround', 0)
-
-	sendDualGesture('fist', 'waveIn', 'atSky', 0)
-	sendDualGesture('fist', 'waveIn', 'atForward', 0)
-	sendDualGesture('fist', 'waveIn', 'atGround', 0)
 });
 
 // Wave Out
