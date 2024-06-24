@@ -104,9 +104,21 @@ var gOrState = [
 }
 ]
 
-var activeGestureCombos = {
-	// builds up a dictionary progressively
-	// ex: 0_fist: 0
+var getOrientation = function(pitch) {
+	// atSky
+	if (pitch > 0.4) {
+		return 'atSky'
+	}
+
+	// atForward
+	if (pitch < 0.4 && pitch > -0.6) {
+		return 'atForward'
+	}
+
+	// atGround
+	if (pitch < -0.6) {
+		return 'atGround'
+	}
 }
 
 
@@ -147,6 +159,9 @@ var sendGestureOsc = function(msg, args) {
 	udp.send(buf, 0, buf.length, outport, '192.168.0.30');
 }
 
+/*
+var activeGestureCombos = {}
+
 var updateActiveGestures = function(string) {
 	if (!activeGestureCombos[string]) {
 		activeGestureCombos[string] = 1
@@ -157,18 +172,15 @@ var updateActiveGestures = function(string) {
 
 var sendGesture = function () {
 	var gestOri = buildStateString(gOrState, true)
-	// var gestOriToggle = updateActiveGestures(gestOri)
+	var gestOriToggle = updateActiveGestures(gestOri)
 
 	var gest = buildStateString(gOrState, false)
-	// var gestToggle = updateActiveGestures(gest)
+	var gestToggle = updateActiveGestures(gest)
 
-	// console.log(gestOri)
-	// console.log(gest)
-	// console.log(activeGestureCombos)
-
-	sendGestureOsc(gest, null)
-	sendGestureOsc(gestOri, null)
+	sendGestureOsc(gest, gestToggle)
+	sendGestureOsc(gestOri, gestOriToggle)
 }
+*/
 
 // EMG
 Myo.on('emg', function(data) {
@@ -176,7 +188,10 @@ Myo.on('emg', function(data) {
 });
 
 
-
+var accel = [
+	{ pitch: 0, roll: 0 },
+	{ pitch: 0, roll: 0 }
+]
 // Orientation
 Myo.on('orientation', function(data) {
 	var id = this.connectIndex;
@@ -184,35 +199,17 @@ Myo.on('orientation', function(data) {
 
 	var roll = Math.atan2(2 * (quat.w * quat.x + quat.y * quat.z), 1 - 2 * (quat.x * quat.x + quat.y * quat.y) );
 	var pitch = (Math.asin(2 * (quat.w * quat.y - quat.z * quat.x ) )) * -1;
+
+	accel[id].pitch = pitch
+	accel[id].roll = roll
+
 	// we don't actually use yaw
 	// var yaw;
 
 	sendOsc(id, 'roll', roll);
 	sendOsc(id, 'pitch', pitch);
 
-	// atSky
-	if (pitch > 0.4) {
-		// sendOsc(this.connectIndex, 'atSky', 1);
-		orientationState[id].atSky = 1
-	} else {
-		orientationState[id].atSky = 0
-	}
-
-	// atForward
-	if (pitch < 0.4 && pitch > -0.6) {
-		// sendOsc(this.connectIndex, 'atForward', 1);
-		orientationState[id].atForward = 1
-	} else {
-		orientationState[id].atForward = 0
-	}
-
-	// atGround
-	if (pitch < -0.6) {
-		// sendOsc(this.connectIndex, 'atGround', 1);
-		orientationState[id].atGround = 1
-	} else {
-		orientationState[id].atGround = 0
-	}
+	
 });
 
 // Gyroscope
@@ -240,11 +237,17 @@ Myo.on('fist', function() {
 	this.vibrate('short');
 	var id = this.connectIndex;
 
-	gOrState[id]['fist'].atSky = orientationState[id].atSky
-	gOrState[id]['fist'].atForward = orientationState[id].atForward
-	gOrState[id]['fist'].atGround = orientationState[id].atGround
+	var ori = getOrientation(accel[id].pitch)
 
-	sendGesture()
+	gOrState[id]['fist'].atSky = ori === 'atSky' ? 1 : 0
+	gOrState[id]['fist'].atForward = ori === 'atForward' ? 1 : 0
+	gOrState[id]['fist'].atGround = ori === 'atGround' ? 1 : 0
+
+	var gestOri = buildStateString(gOrState, true)
+	var gest = buildStateString(gOrState, false)
+
+	sendGestureOsc(gest, 1)
+	sendGestureOsc(gestOri, 1)
 
 });
 
@@ -256,7 +259,11 @@ Myo.on('fist_off', function() {
 	gOrState[id]['fist'].atForward = 0
 	gOrState[id]['fist'].atGround = 0
 
-	sendGesture()
+	var gestOri = buildStateString(gOrState, true)
+	var gest = buildStateString(gOrState, false)
+
+	sendGestureOsc(gest, 0)
+	sendGestureOsc(gestOri, 0)
 
 });
 
@@ -264,11 +271,17 @@ Myo.on('wave_out', function() {
 	this.vibrate('short');
 	var id = this.connectIndex;
 
-	gOrState[id]['waveOut'].atSky = orientationState[id].atSky
-	gOrState[id]['waveOut'].atForward = orientationState[id].atForward
-	gOrState[id]['waveOut'].atGround = orientationState[id].atGround
+	var ori = getOrientation(accel[id].pitch)
 
-	sendGesture()
+	gOrState[id]['waveOut'].atSky = ori === 'atSky' ? 1 : 0
+	gOrState[id]['waveOut'].atForward = ori === 'atForward' ? 1 : 0
+	gOrState[id]['waveOut'].atGround = ori === 'atGround' ? 1 : 0
+
+	var gestOri = buildStateString(gOrState, true)
+	var gest = buildStateString(gOrState, false)
+
+	sendGestureOsc(gest, 1)
+	sendGestureOsc(gestOri, 1)
 });
 
 Myo.on('wave_out_off', function() {
@@ -279,40 +292,60 @@ Myo.on('wave_out_off', function() {
 	gOrState[id]['waveOut'].atForward = 0
 	gOrState[id]['waveOut'].atGround = 0
 
-	sendGesture()
+	var gestOri = buildStateString(gOrState, true)
+	var gest = buildStateString(gOrState, false)
+
+	sendGestureOsc(gest, 0)
+	sendGestureOsc(gestOri, 0)
 });
 
 Myo.on('wave_in', function() {
 	this.vibrate('short');
 	var id = this.connectIndex;
 
-	gOrState[id]['waveIn'].atSky = orientationState[id].atSky
-	gOrState[id]['waveIn'].atForward = orientationState[id].atForward
-	gOrState[id]['waveIn'].atGround = orientationState[id].atGround
+	var ori = getOrientation(accel[id].pitch)
 
-	sendGesture()
+	gOrState[id]['waveIn'].atSky = ori === 'atSky' ? 1 : 0
+	gOrState[id]['waveIn'].atForward = ori === 'atForward' ? 1 : 0
+	gOrState[id]['waveIn'].atGround = ori === 'atGround' ? 1 : 0
+
+	var gestOri = buildStateString(gOrState, true)
+	var gest = buildStateString(gOrState, false)
+
+	sendGestureOsc(gest, 1)
+	sendGestureOsc(gestOri, 1)
 });
 
 Myo.on('wave_in_off', function() {
 	this.vibrate('short');
 	var id = this.connectIndex;
 
-	gOrState[id]['waveOut'].atSky = 0
-	gOrState[id]['waveOut'].atForward = 0
-	gOrState[id]['waveOut'].atGround = 0
+	gOrState[id]['waveIn'].atSky = 0
+	gOrState[id]['waveIn'].atForward = 0
+	gOrState[id]['waveIn'].atGround = 0
 
-	sendGesture()
+	var gestOri = buildStateString(gOrState, true)
+	var gest = buildStateString(gOrState, false)
+
+	sendGestureOsc(gest, 0)
+	sendGestureOsc(gestOri, 0)
 });
 
 Myo.on('fingers_spread', function() {
 	this.vibrate('short');
 	var id = this.connectIndex;
 
-	gOrState[id]['fingersSpread'].atSky = orientationState[id].atSky
-	gOrState[id]['fingersSpread'].atForward = orientationState[id].atForward
-	gOrState[id]['fingersSpread'].atGround = orientationState[id].atGround
+	var ori = getOrientation(accel[id].pitch)
 
-	sendGesture()
+	gOrState[id]['fingersSpread'].atSky = ori === 'atSky' ? 1 : 0
+	gOrState[id]['fingersSpread'].atForward = ori === 'atForward' ? 1 : 0
+	gOrState[id]['fingersSpread'].atGround = ori === 'atGround' ? 1 : 0
+
+	var gestOri = buildStateString(gOrState, true)
+	var gest = buildStateString(gOrState, false)
+
+	sendGestureOsc(gest, 1)
+	sendGestureOsc(gestOri, 1)
 });
 
 Myo.on('fingers_spread_off', function() {
@@ -323,7 +356,11 @@ Myo.on('fingers_spread_off', function() {
 	gOrState[id]['fingersSpread'].atForward = 0
 	gOrState[id]['fingersSpread'].atGround = 0
 
-	sendGesture()
+	var gestOri = buildStateString(gOrState, true)
+	var gest = buildStateString(gOrState, false)
+
+	sendGestureOsc(gest, 0)
+	sendGestureOsc(gestOri, 0)
 });
 
 

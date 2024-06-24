@@ -41,6 +41,8 @@ var buildStateString = function( state, addOri ) {
 	var leftGestString = armHasGesture( state[0], addOri )
 	var rightGestString = armHasGesture( state[1], addOri )
 
+	console.log({leftGestString, rightGestString})
+
 	if (leftGestString) {
 		leftGestString = '0_' + leftGestString
 
@@ -57,9 +59,9 @@ var buildStateString = function( state, addOri ) {
 		}
 	}
 
-	// if (str === '') {
-		
-	// }
+	if (str === '') {
+		str === 'RELAXED'	
+	}
 
 	return str
 	
