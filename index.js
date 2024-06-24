@@ -104,7 +104,10 @@ var gOrState = [
 }
 ]
 
-var activeGestureCombos = []
+var activeGestureCombos = {
+	// builds up a dictionary progressively
+	// ex: 0_fist: 0
+}
 
 
 var throttle = function(callback, limit) {
@@ -133,6 +136,8 @@ var sendOsc = function( myoId, msg, args ) {
 };
 
 var sendGestureOsc = function(msg, args) {
+	console.log(msg, args)
+
 	var buf = osc.toBuffer({
 		address: '/myo/3/' + msg,
 		args: args
@@ -142,12 +147,35 @@ var sendGestureOsc = function(msg, args) {
 	udp.send(buf, 0, buf.length, outport, '192.168.0.30');
 }
 
+var updateActiveGestures = function(string) {
+	if (!activeGestureCombos[string]) {
+		activeGestureCombos[string] = 1
+	} else {
+		activeGestureCombos[string] = 0
+	}
+}
 
+var sendGesture = function () {
+	var gestOri = buildStateString(gOrState, true)
+	// var gestOriToggle = updateActiveGestures(gestOri)
+
+	var gest = buildStateString(gOrState, false)
+	// var gestToggle = updateActiveGestures(gest)
+
+	// console.log(gestOri)
+	// console.log(gest)
+	// console.log(activeGestureCombos)
+
+	sendGestureOsc(gest, null)
+	sendGestureOsc(gestOri, null)
+}
 
 // EMG
 Myo.on('emg', function(data) {
 	sendOsc(this.connectIndex, 'emg', data);
 });
+
+
 
 // Orientation
 Myo.on('orientation', function(data) {
@@ -216,11 +244,7 @@ Myo.on('fist', function() {
 	gOrState[id]['fist'].atForward = orientationState[id].atForward
 	gOrState[id]['fist'].atGround = orientationState[id].atGround
 
-	// console.log(gOrState, buildStateString())
-	var string = buildStateString(gOrState, true)
-	var string2 = buildStateString(gOrState, false)
-
-	sendGestureOsc(, )
+	sendGesture()
 
 });
 
@@ -232,8 +256,7 @@ Myo.on('fist_off', function() {
 	gOrState[id]['fist'].atForward = 0
 	gOrState[id]['fist'].atGround = 0
 
-	// console.log(gOrState, buildStateString())
-	sendGestureOsc(, )
+	sendGesture()
 
 });
 
@@ -245,7 +268,7 @@ Myo.on('wave_out', function() {
 	gOrState[id]['waveOut'].atForward = orientationState[id].atForward
 	gOrState[id]['waveOut'].atGround = orientationState[id].atGround
 
-	console.log(gOrState, buildStateString())
+	sendGesture()
 });
 
 Myo.on('wave_out_off', function() {
@@ -256,7 +279,7 @@ Myo.on('wave_out_off', function() {
 	gOrState[id]['waveOut'].atForward = 0
 	gOrState[id]['waveOut'].atGround = 0
 
-	console.log(gOrState, buildStateString())
+	sendGesture()
 });
 
 Myo.on('wave_in', function() {
@@ -267,7 +290,7 @@ Myo.on('wave_in', function() {
 	gOrState[id]['waveIn'].atForward = orientationState[id].atForward
 	gOrState[id]['waveIn'].atGround = orientationState[id].atGround
 
-	console.log(gOrState, buildStateString())
+	sendGesture()
 });
 
 Myo.on('wave_in_off', function() {
@@ -278,7 +301,7 @@ Myo.on('wave_in_off', function() {
 	gOrState[id]['waveOut'].atForward = 0
 	gOrState[id]['waveOut'].atGround = 0
 
-	console.log(gOrState, buildStateString())
+	sendGesture()
 });
 
 Myo.on('fingers_spread', function() {
@@ -289,7 +312,7 @@ Myo.on('fingers_spread', function() {
 	gOrState[id]['fingersSpread'].atForward = orientationState[id].atForward
 	gOrState[id]['fingersSpread'].atGround = orientationState[id].atGround
 
-	console.log(gOrState, buildStateString())
+	sendGesture()
 });
 
 Myo.on('fingers_spread_off', function() {
@@ -300,7 +323,7 @@ Myo.on('fingers_spread_off', function() {
 	gOrState[id]['fingersSpread'].atForward = 0
 	gOrState[id]['fingersSpread'].atGround = 0
 
-	console.log(gOrState, buildStateString())
+	sendGesture()
 });
 
 

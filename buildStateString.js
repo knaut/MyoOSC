@@ -57,6 +57,10 @@ var buildStateString = function( state, addOri ) {
 		}
 	}
 
+	// if (str === '') {
+		
+	// }
+
 	return str
 	
 }
