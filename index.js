@@ -8,6 +8,7 @@ var udp = dgram.createSocket('udp4');
 var buildStateString = require('./buildStateString')
 
 var getStateRepresentation = require('./getStateRepresentation')
+var getActiveGestureState = require('./getActiveGestureState')
 
 var outport;
 if (process.argv[2]) {
@@ -251,9 +252,17 @@ Myo.on('fist', function() {
 	// sendGestureOsc(gest, 1)
 	// sendGestureOsc(gestOri, 1)
 
-	var state = getStateRepresentation(gOrState)
+	var state = getActiveGestureState(gOrState)
 
-	sendGestureOsc(state, 1)
+	console.log(state)
+
+	for (let i = 0; state.length > i; i++) {
+		if (state[i].indexOf(`${this.connectIndex}_fist`) > -1) {
+			sendGestureOsc(state[i], 1)
+		}
+	}
+
+	// sendGestureOsc(state, 1)
 
 });
 
@@ -261,9 +270,17 @@ Myo.on('fist_off', function() {
 	this.vibrate('short');
 	var id = this.connectIndex;
 
-	var state = getStateRepresentation(gOrState)
+	var state = getActiveGestureState(gOrState)
 
-	sendGestureOsc(state, 0)
+	console.log(state)
+
+	for (let i = 0; state.length > i; i++) {
+		if (state[i].indexOf(`${this.connectIndex}_fist`) > -1) {
+			sendGestureOsc(state[i], 0)
+		}
+	}
+
+	// sendGestureOsc(state, 0)
 
 	gOrState[id]['fist'].atSky = 0
 	gOrState[id]['fist'].atForward = 0
@@ -287,26 +304,44 @@ Myo.on('wave_out', function() {
 	gOrState[id]['waveOut'].atForward = ori === 'atForward' ? 1 : 0
 	gOrState[id]['waveOut'].atGround = ori === 'atGround' ? 1 : 0
 
-	var gestOri = buildStateString(gOrState, true)
-	var gest = buildStateString(gOrState, false)
+	// var gestOri = buildStateString(gOrState, true)
+	// var gest = buildStateString(gOrState, false)
 
-	sendGestureOsc(gest, 1)
-	sendGestureOsc(gestOri, 1)
+	// sendGestureOsc(gest, 1)
+	// sendGestureOsc(gestOri, 1)
+
+	var state = getActiveGestureState(gOrState)
+
+	for (let i = 0; state.length > i; i++) {
+		if (state[i].indexOf(`${this.connectIndex}_waveOut`) > -1) {
+			sendGestureOsc(state[i], 1)
+		}
+	}
+
+	console.log(state)
+
+	// sendGestureOsc(state, 1)
 });
 
 Myo.on('wave_out_off', function() {
 	this.vibrate('short');
 	var id = this.connectIndex;
 
+	var state = getActiveGestureState(gOrState)
+
+	// sendGestureOsc(state, 0)
+
+	for (let i = 0; state.length > i; i++) {
+		if (state[i].indexOf(`${this.connectIndex}_waveOut`) > -1) {
+			sendGestureOsc(state[i], 0)
+		}
+	}
+
 	gOrState[id]['waveOut'].atSky = 0
 	gOrState[id]['waveOut'].atForward = 0
 	gOrState[id]['waveOut'].atGround = 0
 
-	var gestOri = buildStateString(gOrState, true)
-	var gest = buildStateString(gOrState, false)
-
-	sendGestureOsc(gest, 0)
-	sendGestureOsc(gestOri, 0)
+	console.log(state)
 });
 
 Myo.on('wave_in', function() {
