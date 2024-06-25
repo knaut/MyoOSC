@@ -1,13 +1,9 @@
-// Myo setup
 var Myo = require('myo');
 var osc = require('osc-min');
 var dgram = require('dgram');
 
 var udp = dgram.createSocket('udp4');
 
-var buildStateString = require('./buildStateString')
-
-var getStateRepresentation = require('./getStateRepresentation')
 var getActiveGestureState = require('./getActiveGestureState')
 
 var outport;
@@ -162,28 +158,6 @@ var sendGestureOsc = function(msg, args) {
 	udp.send(buf, 0, buf.length, outport, '192.168.0.30');
 }
 
-/*
-var activeGestureCombos = {}
-
-var updateActiveGestures = function(string) {
-	if (!activeGestureCombos[string]) {
-		activeGestureCombos[string] = 1
-	} else {
-		activeGestureCombos[string] = 0
-	}
-}
-
-var sendGesture = function () {
-	var gestOri = buildStateString(gOrState, true)
-	var gestOriToggle = updateActiveGestures(gestOri)
-
-	var gest = buildStateString(gOrState, false)
-	var gestToggle = updateActiveGestures(gest)
-
-	sendGestureOsc(gest, gestToggle)
-	sendGestureOsc(gestOri, gestOriToggle)
-}
-*/
 
 // EMG
 Myo.on('emg', function(data) {
@@ -246,12 +220,6 @@ Myo.on('fist', function() {
 	gOrState[id]['fist'].atForward = ori === 'atForward' ? 1 : 0
 	gOrState[id]['fist'].atGround = ori === 'atGround' ? 1 : 0
 
-	// var gestOri = buildStateString(gOrState, true)
-	// var gest = buildStateString(gOrState, false)
-
-	// sendGestureOsc(gest, 1)
-	// sendGestureOsc(gestOri, 1)
-
 	var state = getActiveGestureState(gOrState)
 
 	console.log(state)
@@ -262,8 +230,6 @@ Myo.on('fist', function() {
 		}
 	}
 
-	// sendGestureOsc(state, 1)
-
 });
 
 Myo.on('fist_off', function() {
@@ -271,6 +237,8 @@ Myo.on('fist_off', function() {
 	var id = this.connectIndex;
 
 	var state = getActiveGestureState(gOrState)
+
+	console.log(state)
 
 	for (let i = 0; state.length > i; i++) {
 		if (state[i].indexOf(`${this.connectIndex}_fist`) > -1) {
@@ -296,6 +264,8 @@ Myo.on('wave_out', function() {
 
 	var state = getActiveGestureState(gOrState)
 
+	console.log(state)
+
 	for (let i = 0; state.length > i; i++) {
 		if (state[i].indexOf(`${this.connectIndex}_waveOut`) > -1) {
 			sendGestureOsc(state[i], 1)
@@ -309,6 +279,8 @@ Myo.on('wave_out_off', function() {
 	var id = this.connectIndex;
 
 	var state = getActiveGestureState(gOrState)
+
+	console.log(state)
 
 	for (let i = 0; state.length > i; i++) {
 		if (state[i].indexOf(`${this.connectIndex}_waveOut`) > -1) {
@@ -334,6 +306,8 @@ Myo.on('wave_in', function() {
 
 	var state = getActiveGestureState(gOrState)
 
+	console.log(state)
+
 	for (let i = 0; state.length > i; i++) {
 		if (state[i].indexOf(`${this.connectIndex}_waveIn`) > -1) {
 			sendGestureOsc(state[i], 1)
@@ -346,6 +320,8 @@ Myo.on('wave_in_off', function() {
 	var id = this.connectIndex;
 
 	var state = getActiveGestureState(gOrState)
+
+	console.log(state)
 
 	for (let i = 0; state.length > i; i++) {
 		if (state[i].indexOf(`${this.connectIndex}_waveIn`) > -1) {
@@ -370,6 +346,8 @@ Myo.on('fingers_spread', function() {
 
 	var state = getActiveGestureState(gOrState)
 
+	console.log(state)
+
 	for (let i = 0; state.length > i; i++) {
 		if (state[i].indexOf(`${this.connectIndex}_fingersSpread`) > -1) {
 			sendGestureOsc(state[i], 1)
@@ -382,6 +360,8 @@ Myo.on('fingers_spread_off', function() {
 	var id = this.connectIndex;
 
 	var state = getActiveGestureState(gOrState)
+
+	console.log(state)
 
 	for (let i = 0; state.length > i; i++) {
 		if (state[i].indexOf(`${this.connectIndex}_fingersSpread`) > -1) {
