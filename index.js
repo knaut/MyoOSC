@@ -159,8 +159,42 @@ var sendGestureOsc = function(msg, args) {
 }
 
 
+var rms = function() {
+	let sumOfSquares = 0;
+    const n = emgReadings.length;
+
+    // Calculate the sum of the squares of the readings
+    for (let i = 0; i < n; i++) {
+      sumOfSquares += emgReadings[i] * emgReadings[i];
+    }
+
+    // Calculate the mean of the squares
+    const meanOfSquares = sumOfSquares / n;
+
+    // Return the square root of the mean of squares
+    return Math.sqrt(meanOfSquares);
+}
+
 // EMG
+const emgReadings = []
+let interval = 0
 Myo.on('emg', function(data) {
+
+	if (emgReadings.length < 30) {
+		emgReadings.push(data[0])
+	} else {
+		interval++
+		emgReadings.shift()
+		if (interval === 10) {
+			interval = 0
+			const rmsValue = rms()
+			// console.log(rmsValue)
+			sendOsc(this.connectIndex, '0_emg_average', rmsValue)
+		}
+		
+	}
+
+
 	sendOsc(this.connectIndex, 'emg', data);
 });
 

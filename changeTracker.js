@@ -1,4 +1,4 @@
-class ChangeTracker {
+module.exports = class ChangeTracker {
     constructor(timespan) {
         this.timespan = timespan;
         this.values = [];  // Array to store timestamped values
@@ -6,7 +6,9 @@ class ChangeTracker {
 
     // Method to add a new value with timestamp
     addValue(value, timestamp) {
-        this.values.push({ value, timestamp });
+        let absValue = Math.abs(value)
+        console.log(absValue)
+        this.values.push({ value: absValue, timestamp });
         this.cleanupOldValues(timestamp);
     }
 
@@ -35,6 +37,7 @@ class ChangeTracker {
     }
 }
 
+/*
 // Example usage:
 
 // Initialize ChangeTracker for a 500 ms timespan
@@ -52,3 +55,4 @@ setInterval(() => {
     let averageChange = changeTracker.calculateAverageChange();
     console.log(`Average change over ${changeTracker.timespan} ms: ${averageChange.toFixed(2)}`);
 }, 100);
+*/
