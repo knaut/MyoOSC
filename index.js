@@ -137,6 +137,10 @@ var throttle = function(callback, limit) {
 var throttleLog = throttle(console.log, 200)
 
 var sendOsc = function( myoId, msg, args ) {
+	// if(msg.indexOf('average') > -1) {
+	// 	console.log(myoId, msg, args)
+	// }
+
 	var buf = osc.toBuffer({
 		address: '/myo/' + myoId + '/' + msg,
 		args: args
@@ -147,7 +151,7 @@ var sendOsc = function( myoId, msg, args ) {
 };
 
 var sendGestureOsc = function(msg, args) {
-	console.log(msg, args)
+	// console.log(msg, args)
 
 	var buf = osc.toBuffer({
 		address: '/myo/' + msg,
@@ -159,13 +163,13 @@ var sendGestureOsc = function(msg, args) {
 }
 
 
-var rms = function() {
+var rms = function(readings) {
 	let sumOfSquares = 0;
-    const n = emgReadings.length;
+    const n = readings.length;
 
     // Calculate the sum of the squares of the readings
     for (let i = 0; i < n; i++) {
-      sumOfSquares += emgReadings[i] * emgReadings[i];
+      sumOfSquares += readings[i] * readings[i];
     }
 
     // Calculate the mean of the squares
@@ -178,24 +182,51 @@ var rms = function() {
 // EMG
 const emgReadings = []
 let interval = 0
+const emgs = [
+	[
+		//  array of arrays, where inner arrays are a range of past n values
+		[],
+		[],
+		[],
+		[],
+		[],
+		[],
+		[],
+		[]
+	],
+	[
+			//  array of arrays, where inner arrays are a range of past n values
+		[],
+		[],
+		[],
+		[],
+		[],
+		[],
+		[],
+		[]
+	]
+]
+
+// var throttleOsc = throttle(sendOsc)
+
 Myo.on('emg', function(data) {
 
-	if (emgReadings.length < 30) {
-		emgReadings.push(data[0])
-	} else {
-		interval++
-		emgReadings.shift()
-		if (interval === 10) {
-			interval = 0
-			const rmsValue = rms()
-			// console.log(rmsValue)
-			sendOsc(this.connectIndex, '0_emg_average', rmsValue)
+	for (let i = 0; data.length > i; i++) {
+
+		if (emgs[this.connectIndex][i].length < 30) {
+			emgs[this.connectIndex][i].push(data[i])
+		} else {
+			emgs[this.connectIndex][i].shift()
+
+			let rmsVal = rms(emgs[this.connectIndex][i])
+			let msg = i + '_emg_average'
+			sendOsc(this.connectIndex, msg, rmsVal)
+
 		}
-		
+
 	}
 
-
-	sendOsc(this.connectIndex, 'emg', data);
+	// sendOsc(this.connectIndex, 'emg', data);
 });
 
 
