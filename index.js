@@ -298,7 +298,7 @@ Myo.on('fist', function() {
 });
 
 Myo.on('fist_off', function() {
-	this.vibrate('short');
+	// this.vibrate('short');
 	var id = this.connectIndex;
 
 	var state = getActiveGestureState(gOrState)
@@ -340,7 +340,7 @@ Myo.on('wave_out', function() {
 });
 
 Myo.on('wave_out_off', function() {
-	this.vibrate('short');
+	// this.vibrate('short');
 	var id = this.connectIndex;
 
 	var state = getActiveGestureState(gOrState)
@@ -381,7 +381,7 @@ Myo.on('wave_in', function() {
 });
 
 Myo.on('wave_in_off', function() {
-	this.vibrate('short');
+	// this.vibrate('short');
 	var id = this.connectIndex;
 
 	var state = getActiveGestureState(gOrState)
@@ -421,7 +421,7 @@ Myo.on('fingers_spread', function() {
 });
 
 Myo.on('fingers_spread_off', function() {
-	this.vibrate('short');
+	// this.vibrate('short');
 	var id = this.connectIndex;
 
 	var state = getActiveGestureState(gOrState)

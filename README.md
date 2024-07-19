@@ -1,6 +1,19 @@
 # MyoOSC
 
-A simple Javascript command-line application that converts realtime data from the Myo Armband to OSC (Open Sound Control).
+A Javascript command-line application that converts realtime data from the Myo Armband to OSC (Open Sound Control).
+
+## Updated July 2024
+
+This project is revived after many years due to a need to use the Myo Armbands (now unsupported/out of production) in an interactive multimedia project.
+
+New features:
+- 100+ distinct OSC messages for dual gesture control (left hand fist + right hand wave out, etc.)
+- EMG smoothing algorithms
+- discriminating gestures based on pitch orientaion, e.g. a fist pointed at the ground sends a different signal than a fist pointed at the sky.
+
+The goal is to create a fully handsfree spatial interface to control visualizer and musical applications via Open Sound Control (i.e. Ableton, TouchDesigner, etc.)
+
+Due to the legacy nature of the system this code is written targeting Node v10. Extreme backward compatibility is a hard requirement for the project.
 
 # What's it for?
 
